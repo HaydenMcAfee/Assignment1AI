@@ -21,6 +21,8 @@ public class GUI  extends JFrame implements MouseListener, MouseMotionListener {
     }
 
     public GUI() {
+
+
         Dimension boardSize = new Dimension(800, 800);
 
 
@@ -49,7 +51,71 @@ public class GUI  extends JFrame implements MouseListener, MouseMotionListener {
             else
                 square.setBackground(i % 2 == 0 ? Color.darkGray : Color.white);
         }
+        placePieces();
+    }
 
+
+    public void mousePressed(MouseEvent e) {
+        piece = null;
+        Component c = board.findComponentAt(e.getX(), e.getY());
+
+        if (c instanceof JPanel)
+            return;
+
+        Point parentLocation = c.getParent().getLocation();
+        x = parentLocation.x - e.getX();
+        y = parentLocation.y - e.getY();
+        piece = (Piece) c;
+        piece.setLocation(e.getX() + x, e.getY() + y);
+        piece.setSize(piece.getWidth(), piece.getHeight());
+        layeredPane.add(piece, JLayeredPane.DRAG_LAYER);
+    }
+
+    //Move the chess piece around
+
+    public void mouseDragged(MouseEvent me) {
+        if (piece == null) return;
+        piece.setLocation(me.getX() + x, me.getY() + y);
+    }
+
+    //Drop the chess piece back onto the chess board
+
+    public void mouseReleased(MouseEvent e) {
+        if (piece == null) return;
+        if (piece.checkMovement((e.getX()/100), (e.getY())/100)) {
+            piece.setVisible(false);
+            Component c = board.findComponentAt(e.getX(), e.getY());
+            if (c instanceof JLabel) {
+                Container parent = c.getParent();
+                parent.remove(0);
+                parent.add(piece);
+            } else {
+                Container parent = (Container) c;
+                parent.add(piece);
+            }
+            piece.setVisible(true);
+            piece.locationX = e.getX()/100;
+            piece.locationY = e.getY()/100;
+            boardTracker[e.getX()/100][e.getY()/100] = piece;
+        }
+        else {
+            piece.setVisible(false);
+            Component c = board.findComponentAt(piece.locationX*100, piece.locationY*100);
+            Container parent = (Container) c;
+            parent.add(piece);
+            piece.setVisible(true);
+        }
+    }
+
+    public void mouseClicked(MouseEvent e) { }
+
+    public void mouseMoved(MouseEvent e) {}
+
+    public void mouseEntered(MouseEvent e) {}
+
+    public void mouseExited(MouseEvent e) {}
+
+    public void placePieces() {
         //Adding each piece to the board scaled down to our board size
 
         ImageIcon icon = new ImageIcon("Pieces/BlkRook.jpg");
@@ -374,65 +440,8 @@ public class GUI  extends JFrame implements MouseListener, MouseMotionListener {
         boardTracker[whtRook2.locationX][whtRook2.locationY] = whtRook2;
 
 
+        Piece.boardtracker = boardTracker;
     }
 
-
-    public void mousePressed(MouseEvent e) {
-        piece = null;
-        Component c = board.findComponentAt(e.getX(), e.getY());
-
-        if (c instanceof JPanel)
-            return;
-
-        Point parentLocation = c.getParent().getLocation();
-        x = parentLocation.x - e.getX();
-        y = parentLocation.y - e.getY();
-        piece = (Piece) c;
-        piece.setLocation(e.getX() + x, e.getY() + y);
-        piece.setSize(piece.getWidth(), piece.getHeight());
-        layeredPane.add(piece, JLayeredPane.DRAG_LAYER);
-    }
-
-    //Move the chess piece around
-
-    public void mouseDragged(MouseEvent me) {
-        if (piece == null) return;
-        piece.setLocation(me.getX() + x, me.getY() + y);
-    }
-
-    //Drop the chess piece back onto the chess board
-
-    public void mouseReleased(MouseEvent e) {
-        if (piece == null) return;
-
-        piece.setVisible(false);
-        Component c = board.findComponentAt(e.getX(), e.getY());
-
-        if (c instanceof JLabel) {
-            Container parent = c.getParent();
-            parent.remove(0);
-            parent.add(piece);
-        } else {
-            Container parent = (Container) c;
-            parent.add(piece);
-        }
-
-        piece.setVisible(true);
-    }
-
-    public void mouseClicked(MouseEvent e) {
-
-    }
-
-    public void mouseMoved(MouseEvent e) {
-    }
-
-    public void mouseEntered(MouseEvent e) {
-
-    }
-
-    public void mouseExited(MouseEvent e) {
-
-    }
 }
 
