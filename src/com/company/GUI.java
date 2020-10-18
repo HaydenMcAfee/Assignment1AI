@@ -8,9 +8,10 @@ public class GUI  extends JFrame implements MouseListener, MouseMotionListener {
     JLayeredPane layeredPane;
     JPanel board;
     Piece piece;
-    Piece[][] boardTracker = new Piece[8][8];
+    static Piece[][] boardTracker = new Piece[8][8];
     int x;
     int y;
+    static int turn = 0;
 
     public Piece[][] getBoardTracker() {
         return boardTracker;
@@ -52,6 +53,7 @@ public class GUI  extends JFrame implements MouseListener, MouseMotionListener {
                 square.setBackground(i % 2 == 0 ? Color.darkGray : Color.white);
         }
         placePieces();
+        AI ai = new AI(board);
     }
 
 
@@ -81,19 +83,48 @@ public class GUI  extends JFrame implements MouseListener, MouseMotionListener {
     //Drop the chess piece back onto the chess board
 
     public void mouseReleased(MouseEvent e) {
+        //Only allow us to move on our turn
+//        if (turn == 0) return;
         if (piece == null) return;
+
+        //Check what our piece is, we do not want to capture the piece itself
+        Piece checkPiece = boardTracker[(e.getX()/100)][(e.getY()/100)];
+        if (checkPiece != null) {
+            if (checkPiece == piece) {
+                piece.setVisible(false);
+                Component c = board.findComponentAt(piece.locationX*100, piece.locationY*100);
+                Container parent = (Container) c;
+                parent.add(piece);
+                piece.setVisible(true);
+            }
+        }
+
         if (piece.checkMovement((e.getX()/100), (e.getY())/100)) {
             piece.setVisible(false);
             Component c = board.findComponentAt(e.getX(), e.getY());
+            //Check if we are capturing
             if (c instanceof JLabel) {
                 Container parent = c.getParent();
                 parent.remove(0);
                 parent.add(piece);
-            } else {
+                //If the piece that was captured was the king then the moving player wins
+                if (checkPiece.type == 5) {
+                    if (checkPiece.team == 0) {
+                        System.out.println("Black Wins");
+                    }
+                    else {
+                        System.out.println("White Wins");
+                    }
+                }
+
+            }
+            //Else case if we are not capturing
+            else {
                 Container parent = (Container) c;
                 parent.add(piece);
             }
             piece.setVisible(true);
+            boardTracker[piece.locationX][piece.locationY]=null;
             piece.locationX = e.getX()/100;
             piece.locationY = e.getY()/100;
             boardTracker[e.getX()/100][e.getY()/100] = piece;
@@ -107,7 +138,7 @@ public class GUI  extends JFrame implements MouseListener, MouseMotionListener {
         }
     }
 
-    public void mouseClicked(MouseEvent e) { }
+    public void mouseClicked(MouseEvent e) {}
 
     public void mouseMoved(MouseEvent e) {}
 
@@ -120,7 +151,7 @@ public class GUI  extends JFrame implements MouseListener, MouseMotionListener {
 
         ImageIcon icon = new ImageIcon("Pieces/BlkRook.jpg");
         Image img = icon.getImage();
-        Piece blkRook = new Piece(1,0,0,1);
+        Piece blkRook = new Piece(1,0,0,1, 0);
         Image imgScale = img.getScaledInstance(100, 100, Image.SCALE_SMOOTH);
         ImageIcon scaledIcon = new ImageIcon(imgScale);
         blkRook.setIcon(scaledIcon);
@@ -131,7 +162,7 @@ public class GUI  extends JFrame implements MouseListener, MouseMotionListener {
 
         icon = new ImageIcon("Pieces/BlkKnight.jpg");
         img = icon.getImage();
-        Piece blkKnight = new Piece(2, 1, 0,1);
+        Piece blkKnight = new Piece(2, 1, 0,1, 1);
         imgScale = img.getScaledInstance(100, 100, Image.SCALE_SMOOTH);
         scaledIcon = new ImageIcon(imgScale);
         blkKnight.setIcon(scaledIcon);
@@ -141,7 +172,7 @@ public class GUI  extends JFrame implements MouseListener, MouseMotionListener {
 
         icon = new ImageIcon("Pieces/BlkBishop.jpg");
         img = icon.getImage();
-        Piece blkBishop = new Piece(3, 2, 0,1);
+        Piece blkBishop = new Piece(3, 2, 0,1, 2);
         imgScale = img.getScaledInstance(100, 100, Image.SCALE_SMOOTH);
         scaledIcon = new ImageIcon(imgScale);
         blkBishop.setIcon(scaledIcon);
@@ -151,7 +182,7 @@ public class GUI  extends JFrame implements MouseListener, MouseMotionListener {
 
         icon = new ImageIcon("Pieces/BlkKing.jpg");
         img = icon.getImage();
-        Piece blkKing = new Piece(5, 3, 0,1);
+        Piece blkKing = new Piece(5, 3, 0,1, 3);
         imgScale = img.getScaledInstance(100, 100, Image.SCALE_SMOOTH);
         scaledIcon = new ImageIcon(imgScale);
         blkKing.setIcon(scaledIcon);
@@ -161,7 +192,7 @@ public class GUI  extends JFrame implements MouseListener, MouseMotionListener {
 
         icon = new ImageIcon("Pieces/BlkQueen.jpg");
         img = icon.getImage();
-        Piece blkQueen = new Piece(4, 4, 0,1);
+        Piece blkQueen = new Piece(4, 4, 0,1, 4);
         imgScale = img.getScaledInstance(100, 100, Image.SCALE_SMOOTH);
         scaledIcon = new ImageIcon(imgScale);
         blkQueen.setIcon(scaledIcon);
@@ -171,7 +202,7 @@ public class GUI  extends JFrame implements MouseListener, MouseMotionListener {
 
         icon = new ImageIcon("Pieces/BlkBishop.jpg");
         img = icon.getImage();
-        Piece blkBishop2 = new Piece(3, 5, 0,1);
+        Piece blkBishop2 = new Piece(3, 5, 0,1, 5);
         imgScale = img.getScaledInstance(100, 100, Image.SCALE_SMOOTH);
         scaledIcon = new ImageIcon(imgScale);
         blkBishop2.setIcon(scaledIcon);
@@ -181,7 +212,7 @@ public class GUI  extends JFrame implements MouseListener, MouseMotionListener {
 
         icon = new ImageIcon("Pieces/BlkKnight.jpg");
         img = icon.getImage();
-        Piece blkKnight2 = new Piece(2, 6, 0,1);
+        Piece blkKnight2 = new Piece(2, 6, 0,1, 6);
         imgScale = img.getScaledInstance(100, 100, Image.SCALE_SMOOTH);
         scaledIcon = new ImageIcon(imgScale);
         blkKnight2.setIcon(scaledIcon);
@@ -191,7 +222,7 @@ public class GUI  extends JFrame implements MouseListener, MouseMotionListener {
 
         icon = new ImageIcon("Pieces/BlkRook.jpg");
         img = icon.getImage();
-        Piece blkRook2 = new Piece(1, 7, 0,1);
+        Piece blkRook2 = new Piece(1, 7, 0,1, 7);
         imgScale = img.getScaledInstance(100, 100, Image.SCALE_SMOOTH);
         scaledIcon = new ImageIcon(imgScale);
         blkRook2.setIcon(scaledIcon);
@@ -201,7 +232,7 @@ public class GUI  extends JFrame implements MouseListener, MouseMotionListener {
 
         icon = new ImageIcon("Pieces/BlkPawn.jpg");
         img = icon.getImage();
-        Piece blkPawn = new Piece(0, 0, 1,1);
+        Piece blkPawn = new Piece(0, 0, 1,1, 8);
         imgScale = img.getScaledInstance(100, 100, Image.SCALE_SMOOTH);
         scaledIcon = new ImageIcon(imgScale);
         blkPawn.setIcon(scaledIcon);
@@ -211,7 +242,7 @@ public class GUI  extends JFrame implements MouseListener, MouseMotionListener {
 
         icon = new ImageIcon("Pieces/BlkPawn.jpg");
         img = icon.getImage();
-        Piece blkPawn2 = new Piece(0, 1, 1,1);
+        Piece blkPawn2 = new Piece(0, 1, 1,1, 9);
         imgScale = img.getScaledInstance(100, 100, Image.SCALE_SMOOTH);
         scaledIcon = new ImageIcon(imgScale);
         blkPawn2.setIcon(scaledIcon);
@@ -221,7 +252,7 @@ public class GUI  extends JFrame implements MouseListener, MouseMotionListener {
 
         icon = new ImageIcon("Pieces/BlkPawn.jpg");
         img = icon.getImage();
-        Piece blkPawn3 = new Piece(0, 2, 1 ,1);
+        Piece blkPawn3 = new Piece(0, 2, 1 ,1, 10);
         imgScale = img.getScaledInstance(100, 100, Image.SCALE_SMOOTH);
         scaledIcon = new ImageIcon(imgScale);
         blkPawn3.setIcon(scaledIcon);
@@ -231,7 +262,7 @@ public class GUI  extends JFrame implements MouseListener, MouseMotionListener {
 
         icon = new ImageIcon("Pieces/BlkPawn.jpg");
         img = icon.getImage();
-        Piece blkPawn4 = new Piece(0, 3 , 1,1);
+        Piece blkPawn4 = new Piece(0, 3 , 1,1, 11);
         imgScale = img.getScaledInstance(100, 100, Image.SCALE_SMOOTH);
         scaledIcon = new ImageIcon(imgScale);
         blkPawn4.setIcon(scaledIcon);
@@ -241,7 +272,7 @@ public class GUI  extends JFrame implements MouseListener, MouseMotionListener {
 
         icon = new ImageIcon("Pieces/BlkPawn.jpg");
         img = icon.getImage();
-        Piece blkPawn5 = new Piece(0, 4, 1,1);
+        Piece blkPawn5 = new Piece(0, 4, 1,1, 12);
         imgScale = img.getScaledInstance(100, 100, Image.SCALE_SMOOTH);
         scaledIcon = new ImageIcon(imgScale);
         blkPawn5.setIcon(scaledIcon);
@@ -251,7 +282,7 @@ public class GUI  extends JFrame implements MouseListener, MouseMotionListener {
 
         icon = new ImageIcon("Pieces/BlkPawn.jpg");
         img = icon.getImage();
-        Piece blkPawn6 = new Piece(0, 5, 1,1);
+        Piece blkPawn6 = new Piece(0, 5, 1,1, 13);
         imgScale = img.getScaledInstance(100, 100, Image.SCALE_SMOOTH);
         scaledIcon = new ImageIcon(imgScale);
         blkPawn6.setIcon(scaledIcon);
@@ -261,7 +292,7 @@ public class GUI  extends JFrame implements MouseListener, MouseMotionListener {
 
         icon = new ImageIcon("Pieces/BlkPawn.jpg");
         img = icon.getImage();
-        Piece blkPawn7 = new Piece(0, 6 ,1,1);
+        Piece blkPawn7 = new Piece(0, 6 ,1,1, 14);
         imgScale = img.getScaledInstance(100, 100, Image.SCALE_SMOOTH);
         scaledIcon = new ImageIcon(imgScale);
         blkPawn7.setIcon(scaledIcon);
@@ -271,7 +302,7 @@ public class GUI  extends JFrame implements MouseListener, MouseMotionListener {
 
         icon = new ImageIcon("Pieces/BlkPawn.jpg");
         img = icon.getImage();
-        Piece blkPawn8 = new Piece(0, 7, 1,1);
+        Piece blkPawn8 = new Piece(0, 7, 1,1, 15);
         imgScale = img.getScaledInstance(100, 100, Image.SCALE_SMOOTH);
         scaledIcon = new ImageIcon(imgScale);
         blkPawn8.setIcon(scaledIcon);
@@ -281,7 +312,7 @@ public class GUI  extends JFrame implements MouseListener, MouseMotionListener {
 
         icon = new ImageIcon("Pieces/WhtPawn.jpg");
         img = icon.getImage();
-        Piece whtPawn = new Piece(0, 0 ,6,0);
+        Piece whtPawn = new Piece(0, 0 ,6,0, 16);
         imgScale = img.getScaledInstance(100, 100, Image.SCALE_SMOOTH);
         scaledIcon = new ImageIcon(imgScale);
         whtPawn.setIcon(scaledIcon);
@@ -291,7 +322,7 @@ public class GUI  extends JFrame implements MouseListener, MouseMotionListener {
 
         icon = new ImageIcon("Pieces/WhtPawn.jpg");
         img = icon.getImage();
-        Piece whtPawn2 = new Piece(0, 1, 6,0);
+        Piece whtPawn2 = new Piece(0, 1, 6,0, 17);
         imgScale = img.getScaledInstance(100, 100, Image.SCALE_SMOOTH);
         scaledIcon = new ImageIcon(imgScale);
         whtPawn2.setIcon(scaledIcon);
@@ -301,7 +332,7 @@ public class GUI  extends JFrame implements MouseListener, MouseMotionListener {
 
         icon = new ImageIcon("Pieces/WhtPawn.jpg");
         img = icon.getImage();
-        Piece whtPawn3 = new Piece(0, 2, 6,0);
+        Piece whtPawn3 = new Piece(0, 2, 6,0, 18);
         imgScale = img.getScaledInstance(100, 100, Image.SCALE_SMOOTH);
         scaledIcon = new ImageIcon(imgScale);
         whtPawn3.setIcon(scaledIcon);
@@ -311,7 +342,7 @@ public class GUI  extends JFrame implements MouseListener, MouseMotionListener {
 
         icon = new ImageIcon("Pieces/WhtPawn.jpg");
         img = icon.getImage();
-        Piece whtPawn4 = new Piece(0, 3, 6,0);
+        Piece whtPawn4 = new Piece(0, 3, 6,0, 19);
         imgScale = img.getScaledInstance(100, 100, Image.SCALE_SMOOTH);
         scaledIcon = new ImageIcon(imgScale);
         whtPawn4.setIcon(scaledIcon);
@@ -321,7 +352,7 @@ public class GUI  extends JFrame implements MouseListener, MouseMotionListener {
 
         icon = new ImageIcon("Pieces/WhtPawn.jpg");
         img = icon.getImage();
-        Piece whtPawn5 = new Piece(0,4 ,6,0);
+        Piece whtPawn5 = new Piece(0,4 ,6,0, 20);
         imgScale = img.getScaledInstance(100, 100, Image.SCALE_SMOOTH);
         scaledIcon = new ImageIcon(imgScale);
         whtPawn5.setIcon(scaledIcon);
@@ -331,7 +362,7 @@ public class GUI  extends JFrame implements MouseListener, MouseMotionListener {
 
         icon = new ImageIcon("Pieces/WhtPawn.jpg");
         img = icon.getImage();
-        Piece whtPawn6 = new Piece(0,5,6,0);
+        Piece whtPawn6 = new Piece(0,5,6,0, 21);
         imgScale = img.getScaledInstance(100, 100, Image.SCALE_SMOOTH);
         scaledIcon = new ImageIcon(imgScale);
         whtPawn6.setIcon(scaledIcon);
@@ -341,7 +372,7 @@ public class GUI  extends JFrame implements MouseListener, MouseMotionListener {
 
         icon = new ImageIcon("Pieces/WhtPawn.jpg");
         img = icon.getImage();
-        Piece whtPawn7 = new Piece(0,6,6,0);
+        Piece whtPawn7 = new Piece(0,6,6,0, 22);
         imgScale = img.getScaledInstance(100, 100, Image.SCALE_SMOOTH);
         scaledIcon = new ImageIcon(imgScale);
         whtPawn7.setIcon(scaledIcon);
@@ -351,7 +382,7 @@ public class GUI  extends JFrame implements MouseListener, MouseMotionListener {
 
         icon = new ImageIcon("Pieces/WhtPawn.jpg");
         img = icon.getImage();
-        Piece whtPawn8 = new Piece(0,7,6,0);
+        Piece whtPawn8 = new Piece(0,7,6,0, 23);
         imgScale = img.getScaledInstance(100, 100, Image.SCALE_SMOOTH);
         scaledIcon = new ImageIcon(imgScale);
         whtPawn8.setIcon(scaledIcon);
@@ -361,7 +392,7 @@ public class GUI  extends JFrame implements MouseListener, MouseMotionListener {
 
         icon = new ImageIcon("Pieces/WhtRook.jpg");
         img = icon.getImage();
-        Piece whtRook = new Piece(1,0,7,0);
+        Piece whtRook = new Piece(1,0,7,0, 24);
         imgScale = img.getScaledInstance(100, 100, Image.SCALE_SMOOTH);
         scaledIcon = new ImageIcon(imgScale);
         whtRook.setIcon(scaledIcon);
@@ -371,7 +402,7 @@ public class GUI  extends JFrame implements MouseListener, MouseMotionListener {
 
         icon = new ImageIcon("Pieces/WhtKnight.jpg");
         img = icon.getImage();
-        Piece whtKnight = new Piece(2, 1, 7,0);
+        Piece whtKnight = new Piece(2, 1, 7,0, 25);
         imgScale = img.getScaledInstance(100, 100, Image.SCALE_SMOOTH);
         scaledIcon = new ImageIcon(imgScale);
         whtKnight.setIcon(scaledIcon);
@@ -381,7 +412,7 @@ public class GUI  extends JFrame implements MouseListener, MouseMotionListener {
 
         icon = new ImageIcon("Pieces/WhtBishop.jpg");
         img = icon.getImage();
-        Piece whtBishop = new Piece(3,2,7,0);
+        Piece whtBishop = new Piece(3,2,7,0, 26);
         imgScale = img.getScaledInstance(100, 100, Image.SCALE_SMOOTH);
         scaledIcon = new ImageIcon(imgScale);
         whtBishop.setIcon(scaledIcon);
@@ -391,7 +422,7 @@ public class GUI  extends JFrame implements MouseListener, MouseMotionListener {
 
         icon = new ImageIcon("Pieces/WhtQueen.jpg");
         img = icon.getImage();
-        Piece whtQueen = new Piece(4,3,7,0);
+        Piece whtQueen = new Piece(4,3,7,0,27);
         imgScale = img.getScaledInstance(100, 100, Image.SCALE_SMOOTH);
         scaledIcon = new ImageIcon(imgScale);
         whtQueen.setIcon(scaledIcon);
@@ -401,7 +432,7 @@ public class GUI  extends JFrame implements MouseListener, MouseMotionListener {
 
         icon = new ImageIcon("Pieces/WhtKing.jpg");
         img = icon.getImage();
-        Piece whtKing = new Piece(5,4,7,0);
+        Piece whtKing = new Piece(5,4,7,0, 28);
         imgScale = img.getScaledInstance(100, 100, Image.SCALE_SMOOTH);
         scaledIcon = new ImageIcon(imgScale);
         whtKing.setIcon(scaledIcon);
@@ -411,7 +442,7 @@ public class GUI  extends JFrame implements MouseListener, MouseMotionListener {
 
         icon = new ImageIcon("Pieces/WhtBishop.jpg");
         img = icon.getImage();
-        Piece whtBishop2 = new Piece(3,5,7,0);
+        Piece whtBishop2 = new Piece(3,5,7,0, 29);
         imgScale = img.getScaledInstance(100, 100, Image.SCALE_SMOOTH);
         scaledIcon = new ImageIcon(imgScale);
         whtBishop2.setIcon(scaledIcon);
@@ -421,7 +452,7 @@ public class GUI  extends JFrame implements MouseListener, MouseMotionListener {
 
         icon = new ImageIcon("Pieces/WhtKnight.jpg");
         img = icon.getImage();
-        Piece whtKnight2 = new Piece(2,6,7,0);
+        Piece whtKnight2 = new Piece(2,6,7,0, 30);
         imgScale = img.getScaledInstance(100, 100, Image.SCALE_SMOOTH);
         scaledIcon = new ImageIcon(imgScale);
         whtKnight2.setIcon(scaledIcon);
@@ -431,7 +462,7 @@ public class GUI  extends JFrame implements MouseListener, MouseMotionListener {
 
         icon = new ImageIcon("Pieces/WhtRook.jpg");
         img = icon.getImage();
-        Piece whtRook2 = new Piece(1,7,7,0);
+        Piece whtRook2 = new Piece(1,7,7,0, 31);
         imgScale = img.getScaledInstance(100, 100, Image.SCALE_SMOOTH);
         scaledIcon = new ImageIcon(imgScale);
         whtRook2.setIcon(scaledIcon);
